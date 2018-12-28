@@ -32,3 +32,21 @@ The public IP address of the instance is displayed along with its name.
 
 My public IP address of the instance is : 52.47.127.157
 
+## Instance Configuration and Connection 
+
+  1. Download your instance Private Key from your profile, which starts with "LightsailDefaultKey" and with ".pem" extention.
+
+  2. In your local machine, rename the file to "Lightsail_Key.rsa " and save it in `~/.ssh/`
+
+  3. Change the permission: `chmod 600 ~/.ssh/Lightsail_key.rsa`
+
+  4. Connect to our Amazon Lightsail instance by using Ubuntu User `ssh -i ~/.ssh/Lightsail_Key.rsa -p 2200 ubuntu@[PUT YOUR PUBLIC IP ADDRESS, IN MY CASE IS 52.47.127.157]`
+  Congrats!, you officially now have access to the server.
+
+
+
+
+
+
+
+
