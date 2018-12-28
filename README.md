@@ -50,12 +50,12 @@ My public IP address of the instance is : 52.47.127.157
      * `sudo apt-get upgrade`
 
   2. Change the SSH port from 22 to 2200. Make sure to configure the Lightsail firewall to allow it.
-     * Open ssh config , run the following command :
+     * Open SSH config , run the following command :
      `sudo nano /etc/ssh/sshd_config`
 
      * Change the "Port 22" in the file to "Port 2200"
 
-     * Restart ssh service, run the following command :
+     * Restart SSH service, run the following command :
      `sudo service ssh restart`
 
 
@@ -66,3 +66,31 @@ My public IP address of the instance is : 52.47.127.157
 
      Then enable ufw, run the following command :
      * `sudo ufw enable`
+
+  4. In Amazon Lightsail, go to "Networking" section then "Firewall" :  
+     * Disable SSH - TCP - port range 20
+     * Add Custom - TCP - port range 2200
+     * Add Cusotm - UDP - port range 123
+     * LEAVE HTTP - TCP - port range 80 AS IT IS 
+
+**Warning**: When changing the SSH port, make sure that the firewall is open for port 2200 first, so that you don't lock yourself out of the server. When you change the SSH port, the Lightsail instance will no longer be accessible through the web app 'Connect using SSH' button. The button assumes the default port is being used. There are instructions on the same page for connecting from your terminal to the instance. Connect using those instructions and then follow the rest of the steps.
+
+
+Now that SSH port has been changed to 2200, Try exiting the SSH connection and re-connecting, run the following command :
+     * `ssh -i ~/.ssh/Lightsail_Key.rsa -p 2200 ubuntu@52.47.127.157` 
+
+
+## Create a New User "grader"
+
+   1. To create a user called grader, run the following command :
+      * `sudo adduser grader`
+
+   To check if the new user has been created successfully or not, run the following command : 
+      * `ls /home/grader` 
+      If the command exits without any problems, then that means the path is valid.
+
+   2. To give grader sudo permission, run the following command :
+      * `sudo nano /etc/sudoers.d/grader`
+
+      add the following line :
+      grader ALL=(ALL:ALL) ALL
