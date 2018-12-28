@@ -40,13 +40,29 @@ My public IP address of the instance is : 52.47.127.157
 
   3. Change the permission: `chmod 600 ~/.ssh/Lightsail_key.rsa`
 
-  4. Connect to our Amazon Lightsail instance by using Ubuntu User `ssh -i ~/.ssh/Lightsail_Key.rsa -p 2200 ubuntu@[PUT YOUR PUBLIC IP ADDRESS, IN MY CASE IS 52.47.127.157]`
+  4. Connect to our Amazon Lightsail instance by using Ubuntu User `ssh -i ~/.ssh/Lightsail_Key.rsa -p 22 ubuntu@[PUT YOUR PUBLIC IP ADDRESS, IN MY CASE IS 52.47.127.157]`
   Congrats!, you officially now have access to the server.
 
+## Secure the Server
+
+  1. Update all currently installed packages, run the following commands :
+     * `sudo apt-get update`
+     * `sudo apt-get upgrade`
+
+  2. Change the SSH port from 22 to 2200. Make sure to configure the Lightsail firewall to allow it.
+     * Open ssh config , run the following command :
+     `sudo nano /etc/ssh/sshd_config`
+
+     * Change the "Port 22" in the file to "Port 2200"
+
+     * Restart ssh service, run the following command :
+     `sudo service ssh restart`
 
 
+  3. Configure the Uncomplicated Firewall (UFW) to only allow incoming connections for SSH (port 2200), HTTP (port 80), and NTP (port 123), run the following commands :
+     * `sudo ufw allow 2200`
+     * `sudo ufw allow 80`
+     * `sudo ufw allow 123`
 
-
-
-
-
+     Then enable ufw, run the following command :
+     * `sudo ufw enable`
