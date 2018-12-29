@@ -10,9 +10,11 @@ This project is a good tutorial on how to build a secure server, install and con
 
 A baseline installation of a Linux server [Amazon Lightsail](https://signin.aws.amazon.com) and prepare it to host [Item Catalog](https://github.com/kalthommusa/Item_Catalog_Project2) web applications.
 
-## IP 
+## IP : 
+   35.180.75.141
 
-  * IP Address: http://35.180.187.18.xip.io
+## The complete URL to the hosted web application: 
+   http://35.180.75.141.xip.io
 
 ## Make an Amazon Lightsail Instance
 
@@ -30,7 +32,7 @@ A baseline installation of a Linux server [Amazon Lightsail](https://signin.aws.
 
 The public IP address of the instance is displayed along with its name.
 
-My public IP address of the instance is : 35.180.187.18
+My public IP address of the instance is : 35.180.75.141
 
 ## Instance Configuration and Connection 
 
@@ -40,7 +42,7 @@ My public IP address of the instance is : 35.180.187.18
 
   3. Change the permission: `chmod 600 ~/.ssh/Lightsail_key.rsa`
 
-  4. Connect to our Amazon Lightsail instance by using Ubuntu User `ssh -i ~/.ssh/Lightsail_Key.rsa -p 22 ubuntu@[PUT YOUR PUBLIC IP ADDRESS, IN MY CASE IS 35.180.187.18]`
+  4. Connect to our Amazon Lightsail instance by using Ubuntu User `ssh -i ~/.ssh/Lightsail_Key.rsa -p 22 ubuntu@[PUT YOUR PUBLIC IP ADDRESS, IN MY CASE IS 35.180.75.141]`
 
   **Congrats!** , you officially now have access to the server.
 
@@ -79,7 +81,9 @@ My public IP address of the instance is : 35.180.187.18
 
 Now that SSH port has been changed to 2200, Try exiting the SSH connection and re-connecting to your server, run the following command :
 
-     *  `ssh -i ~/.ssh/Lightsail_Key.rsa -p 2200 ubuntu@35.180.187.18` 
+     * `ssh -i ~/.ssh/Lightsail_Key.rsa -p 2200 ubuntu@35.180.75.141`
+
+    **Congrats!**
 
 
 ## Create a New User "grader"
@@ -89,8 +93,7 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
       set a password , then you can fill the rest of the informations or just leave it empty by press entr it is optional.
 
    To check if the new user has been created successfully or not, run the following command :
-
-      *  `ls /home/grader` 
+      * `ls /home/grader` 
       If the command exits without any problems, then that means the path is valid.
 
    2. To give grader sudo permission, run the following command :
@@ -113,7 +116,7 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
       * Copy the public key from your local machine, in my case : 
         `cat /c/Users/Toshiba/.ssh/grader_key.pub`
 
-      * Back to your server terminal 'or connenct to your server run: `ssh -i ~/.ssh/Lightsail_Key.rsa -p 2200 ubuntu@35.180.187.18` ', and run the following commands :
+      * Back to your server terminal 'or connenct to your server run: `ssh -i ~/.ssh/Lightsail_Key.rsa -p 2200 ubuntu@35.180.75.141` ', and run the following commands :
 
         `cd /home/grader`
       
@@ -141,7 +144,7 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
 
       * Disconnect and re-connecting to your server but this time login as a grader user with the generated key , run the following command :
 
-        `ssh -i ~/.ssh/grader_key -p 2200 grader@35.180.187.18`
+        `ssh -i ~/.ssh/grader_key -p 2200 grader@35.180.75.141`
         
         **Congrats!**
 
@@ -166,17 +169,26 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
    6. Install PostgreSQL, run the following command : 
       * `sudo apt-get install postgresql`
 
-   7. Check that no remote connections are allowed (default), run the following command :  
+   7. Install psycopg2, run the following command : 
+    * `sudo apt-get -qqy install postgresql python-psycopg2`
+
+   8. Setup the database, run the following commands : 
+  
+    * `sudo apt-get install libpq-dev python-dev`
+
+    * `sudo apt-get install postgresql postgresql-contrib`
+
+   9. Check that no remote connections are allowed (default), run the following command :  
       * `sudo nano /etc/postgresql/9.5/main/pg_hba.conf`
 
-   8. Create a new database user named catalog, run the following commands :
+   10. Create a new database user named catalog, run the following commands :
       * `sudo su - postgres`
 
       * `psql`
 
       then inside psql shell, run the following commands :
 
-      * `CREATE USER catalog WITH PASSWORD 'your password';`
+      * `CREATE USER catalog WITH PASSWORD 'choose a password in my case it is catalog';`
 
       * `ALTER USER catalog CREATEDB;`
 
@@ -184,8 +196,101 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
 
       then exit psql shell
       * `\q`
+      and then logout from postgres 
 
-   9. Install git, run the following command :
+   11. Install git, run the following command :
       * `sudo apt-get install git`
 
 
+## Deploy the Item Catalog project
+
+  1. Clone the Item Catalog project from the Github repository, run the following commands : 
+     * `cd /var/www`
+
+     * `sudo mkdir catalog`
+
+     * `sudo chown -R grader:grader catalog`
+
+     * `cd catalog`
+
+     * `git clone https://github.com/kalthommusa/Item_Catalog_Project2 catalog`
+
+  2. Create .wsgi file in the same directory, run the following command :
+     * `sudo nano catalog.wsgi` 
+
+     then add the follwoing inside it: 
+     
+     `import sys
+     import logging
+     logging.basicConfig(stream=sys.stderr)
+     sys.path.insert(0, "/var/www/catalog/") `
+     `                                       `
+     `from catalog import app as application
+     application.secret_key = 'Your_google_secret_key'`
+  
+  3. Reastart Apache, run the following command :
+    * `sudo service apache2 restart`
+
+  4. cd to `/var/www/catalog/catalog`
+
+  5. Rename the application.py file, run the following command :
+    * `sudo mv project.py __init__.py`
+
+  6. Edit __init__.py, run the following command :
+    * `sudo nano __init__.py`
+    then change `app.run(host='0.0.0.0', port=5000)` to `app.run()`
+
+  7. Change the database in  __init__.py, database_setup.py and populate_database.py files :
+    from `engine = create_engine('sqlite:///weddingvenuesappwithusers.db')` to
+    `engine = create_engine('postgresql://catalog:catalog@localhost/catalog')` with username catalog and password catalog, run the following commands then edit each file's database :
+    * `sudo nano __init__.py`
+    * `sudo nano database_setup.py`
+    * `sudo nano populate_database.py`
+
+  8. Edit __init__.py, run the following command : 
+    * `sudo nano __init__.py`
+    then change `client_secrets.json` path to `/var/www/catalog/catalog/client_secrets.json`
+  
+  9. cd to `~/` then installing the virtual machine, run the following commands :
+    
+    `* sudo pip install virtualenv
+     * sudo virtualenv venv
+     * source venv/bin/activate
+     * sudo chmod -R 777 venv`
+
+  10. Install Flask and other packages, run the following commands :
+
+    `* pip install psycopg2-binary
+     * pip install psycopg2t
+     * pip install Flask-SQLAlchemy
+     * pip install requests
+     * pip install oauth2client`
+
+  11. Setup server configuration, run the following command :
+    * `sudo nano /etc/apache2/sites-available/catalog.conf`
+    then write the following lines:
+
+`<VirtualHost *:80>
+    ServerName [YOUR PUBLIC IP ADDRESS IN MY CASE 35.180.75.141]
+    ServerAlias [YOUR AMAZON LIGHTSAIL HOST NAME IN MY CASE Udacity_Linux_Server_Configuration]
+    ServerAdmin admin@[YOUR PUBLIC IP ADDRESS IN MY CASE 35.180.75.141]
+    WSGIDaemonProcess catalog python-path=/var/www/catalog:/var/www/catalog/venv/lib/python2.7/site-packages
+    WSGIProcessGroup catalog
+    WSGIScriptAlias / /var/www/catalog/catalog.wsgi
+    <Directory /var/www/catalog/catalog/>
+        Order allow,deny
+        Allow from all
+    </Directory>
+    Alias /static /var/www/catalog/catalog/static
+    <Directory /var/www/catalog/catalog/static/>
+        Order allow,deny
+        Allow from all
+    </Directory>
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    LogLevel warn
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>`
+
+  12. Enable the virtual host, run the following command :
+   * `sudo a2ensite catalog`
+   
