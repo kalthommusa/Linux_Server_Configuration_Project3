@@ -12,9 +12,9 @@ A baseline installation of a Linux server [Amazon Lightsail](https://signin.aws.
 
 ## IP 
 
-  * IP Address: http://52.47.127.157.xip.io
+  * IP Address: http://35.180.187.18.xip.io
 
-## Amazon Lightsail
+## Make an Amazon Lightsail Instance
 
   1. First, log in to [Amazon Lightsail](https://signin.aws.amazon.com). If you don't already have an Amazon Web Services account, you'll be prompted to create one.
 
@@ -30,17 +30,17 @@ A baseline installation of a Linux server [Amazon Lightsail](https://signin.aws.
 
 The public IP address of the instance is displayed along with its name.
 
-My public IP address of the instance is : 52.47.127.157
+My public IP address of the instance is : 35.180.187.18
 
 ## Instance Configuration and Connection 
 
   1. Download your instance Private Key from your profile, which starts with "LightsailDefaultKey" and with ".pem" extention.
 
-  2. In your local machine, rename the file to "Lightsail_Key.rsa " and save it in `~/.ssh/`
+  2. In your local machine, rename the file to "Lightsail_Key.rsa" and save it in `~/.ssh/`
 
   3. Change the permission: `chmod 600 ~/.ssh/Lightsail_key.rsa`
 
-  4. Connect to our Amazon Lightsail instance by using Ubuntu User `ssh -i ~/.ssh/Lightsail_Key.rsa -p 22 ubuntu@[PUT YOUR PUBLIC IP ADDRESS, IN MY CASE IS 52.47.127.157]`
+  4. Connect to our Amazon Lightsail instance by using Ubuntu User `ssh -i ~/.ssh/Lightsail_Key.rsa -p 22 ubuntu@[PUT YOUR PUBLIC IP ADDRESS, IN MY CASE IS 35.180.187.18]`
   Congrats!, you officially now have access to the server.
 
 ## Secure the Server
@@ -76,14 +76,15 @@ My public IP address of the instance is : 52.47.127.157
 **Warning**: When changing the SSH port, make sure that the firewall is open for port 2200 first, so that you don't lock yourself out of the server. When you change the SSH port, the Lightsail instance will no longer be accessible through the web app 'Connect using SSH' button. The button assumes the default port is being used. There are instructions on the same page for connecting from your terminal to the instance. Connect using those instructions and then follow the rest of the steps.
 
 
-Now that SSH port has been changed to 2200, Try exiting the SSH connection and re-connecting, run the following command :
-     * `ssh -i ~/.ssh/Lightsail_Key.rsa -p 2200 ubuntu@52.47.127.157` 
+Now that SSH port has been changed to 2200, Try exiting the SSH connection and re-connecting to your server, run the following command :
+     * `ssh -i ~/.ssh/Lightsail_Key.rsa -p 2200 ubuntu@35.180.187.18` 
 
 
 ## Create a New User "grader"
 
    1. To create a user called grader, run the following command :
       * `sudo adduser grader`
+      set a password , then you can fill the rest of the informations or just leave it empty by press entr it is optional.
 
    To check if the new user has been created successfully or not, run the following command : 
       * `ls /home/grader` 
@@ -91,6 +92,51 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
 
    2. To give grader sudo permission, run the following command :
       * `sudo nano /etc/sudoers.d/grader`
+      and then add the following line :
+      * `grader ALL=(ALL:ALL) ALL`
+      
 
-      add the following line :
-      grader ALL=(ALL:ALL) ALL
+## Generate the SSH key-pairs for grader     
+
+   1. To create the public and private keys for grader, open another terminal in your local machine out of the server 'or disconnent with your server', then run the following command :
+      * `ssh-keygen` 
+        when you asked to name the file that saves the keys, leave the path as it is but you can change the last directory's name, choose "grader_key" or whatever you want , in my case it is : /c/Users/Toshiba/.ssh/grader_key
+
+      * `cd to ~/.ssh`
+
+      * Change the permission, run the following commands :
+        `chmod 644 ~/.ssh/grader_key`
+
+      * Copy the public key from your local machine, in my case : 
+        `cat /c/Users/Toshiba/.ssh/grader_key.pub`
+
+      * Back to your server terminal 'or connenct to your server run: `ssh -i ~/.ssh/Lightsail_Key.rsa -p 2200 ubuntu@35.180.187.18` ', and run the following commands :
+
+        `cd /home/grader`
+      
+      * Create .ssh folder for saving the public keys, run the following commands :
+        `sudo mkdir .ssh`
+
+      * `sudo touch .ssh/authorized_keys`
+
+      * Paste the public key in your virtual machine, run the following command : 
+        `sudo nano .ssh/authorized_keys`
+
+      * Change the permission, run the following commands :
+        `sudo chmod 700 /home/grader/.ssh`
+        `sudo chmod 644 /home/grader/.ssh/authorized_keys`
+      
+      * Change file owner, run the following command :
+        `sudo chown -R grader:grader /home/grader/.ssh`
+
+      * To force all users to only login using a key pair, edit the configuration file for sshd, run the  following command :
+        `sudo nano /etc/ssh/sshd_config`
+        then change PasswordAuthentication to **no** 
+
+      * Restart server configuration, run the following command :
+        `sudo service ssh restart`
+
+      * Disconnect and re-connecting to your server but this time login as a grader user with the generated key , run the following command :
+        `ssh -i ~/.ssh/grader_key -p 2200 grader@35.180.187.18`
+        
+        **Congrats!**
