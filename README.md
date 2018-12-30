@@ -10,7 +10,7 @@ This project is a good tutorial on how to build a secure server, install and con
 
 A baseline installation of a Linux server [Amazon Lightsail](https://signin.aws.amazon.com) and prepare it to host [Item Catalog](https://github.com/kalthommusa/Item_Catalog_Project2) web applications.
 
-## IP : 
+## IP Address : 
    35.180.75.141
 
 ## The complete URL to the hosted web application: 
@@ -81,22 +81,25 @@ My public IP address of the instance is : 35.180.75.141
 
 Now that SSH port has been changed to 2200, Try exiting the SSH connection and re-connecting to your server, run the following command :
 
-     * `ssh -i ~/.ssh/Lightsail_Key.rsa -p 2200 ubuntu@35.180.75.141`
+    ssh -i ~/.ssh/Lightsail_Key.rsa -p 2200 ubuntu@35.180.75.141
 
-    **Congrats!**
+    Congrats!
 
 
 ## Create a New User "grader"
 
    1. To create a user called grader, run the following command :
+
       * `sudo adduser grader`
       set a password , then you can fill the rest of the informations or just leave it empty by press entr it is optional.
 
    To check if the new user has been created successfully or not, run the following command :
+
       * `ls /home/grader` 
       If the command exits without any problems, then that means the path is valid.
 
    2. To give grader sudo permission, run the following command :
+
       * `sudo nano /etc/sudoers.d/grader`
       and then add the following line :
       * `grader ALL=(ALL:ALL) ALL`
@@ -121,25 +124,31 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
         `cd /home/grader`
       
       * Create .ssh folder for saving the public keys, run the following commands :
+
         `sudo mkdir .ssh`
 
       * `sudo touch .ssh/authorized_keys`
 
       * Paste the public key in your virtual machine, run the following command : 
+
         `sudo nano .ssh/authorized_keys`
 
       * Change the permission, run the following commands :
+
         `sudo chmod 700 /home/grader/.ssh`
         `sudo chmod 644 /home/grader/.ssh/authorized_keys`
       
       * Change file owner, run the following command :
+
         `sudo chown -R grader:grader /home/grader/.ssh`
 
       * To force all users to only login using a key pair, edit the configuration file for sshd, run the  following command :
+
         `sudo nano /etc/ssh/sshd_config`
         then change PasswordAuthentication to **no** 
 
       * Restart server configuration, run the following command :
+
         `sudo service ssh restart`
 
       * Disconnect and re-connecting to your server but this time login as a grader user with the generated key , run the following command :
@@ -151,37 +160,46 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
 ## Prepare the Server to Deploy a Wed Application
 
    1. Configure the local timezone to UTC, run the following command :
+
       * `sudo dpkg-reconfigure tzdata`
       Select "None of the above" and then select UTC
 
    2. Install Apache, run the following command :
+
       * `sudo apt-get install apache2`
 
    3. TO configure Apache,install mod_wsgi, run the following command :
+
       * `sudo apt-get install python-setuptools libapache2-mod-wsgi`
 
    4. Restart Apache, run the following command :
+
       * `sudo service apache2 restart`
 
    5. Install python2, run the following command :
+
       * `sudo apt-get install python2.7`
 
    6. Install PostgreSQL, run the following command : 
+
       * `sudo apt-get install postgresql`
 
-   7. Install psycopg2, run the following command : 
-    * `sudo apt-get -qqy install postgresql python-psycopg2`
+   7. Install psycopg2, run the following command :
+
+      * `sudo apt-get -qqy install postgresql python-psycopg2`
 
    8. Setup the database, run the following commands : 
   
-    * `sudo apt-get install libpq-dev python-dev`
+      * `sudo apt-get install libpq-dev python-dev`
 
-    * `sudo apt-get install postgresql postgresql-contrib`
+      * `sudo apt-get install postgresql postgresql-contrib`
 
    9. Check that no remote connections are allowed (default), run the following command :  
+
       * `sudo nano /etc/postgresql/9.5/main/pg_hba.conf`
 
    10. Create a new database user named catalog, run the following commands :
+
       * `sudo su - postgres`
 
       * `psql`
@@ -195,11 +213,12 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
       * `CREATE DATABASE catalog WITH OWNER catalog;`
 
       then exit psql shell
-      * `\q`
+      `\q`
       and then logout from postgres 
 
    11. Install git, run the following command :
-      * `sudo apt-get install git`
+
+       * `sudo apt-get install git`
 
 
 ## Deploy the Item Catalog project
@@ -226,7 +245,7 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
      sys.path.insert(0, "/var/www/catalog/") `
      `                                       `
      `from catalog import app as application
-     application.secret_key = 'Your_google_secret_key'`
+     application.secret_key = 'Put_Your_google_secret_key'`
   
   3. Reastart Apache, run the following command :
     * `sudo service apache2 restart`
@@ -234,7 +253,7 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
   4. cd to `/var/www/catalog/catalog`
 
   5. Rename the application.py file, run the following command :
-    * `sudo mv project.py __init__.py`
+    `sudo mv project.py __init__.py`
 
   6. Edit __init__.py, run the following command :
     * `sudo nano __init__.py`
@@ -243,31 +262,34 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
   7. Change the database in  __init__.py, database_setup.py and populate_database.py files :
     from `engine = create_engine('sqlite:///weddingvenuesappwithusers.db')` to
     `engine = create_engine('postgresql://catalog:catalog@localhost/catalog')` with username catalog and password catalog, run the following commands then edit each file's database :
-    * `sudo nano __init__.py`
-    * `sudo nano database_setup.py`
-    * `sudo nano populate_database.py`
 
-  8. Edit __init__.py, run the following command : 
-    * `sudo nano __init__.py`
+    `sudo nano __init__.py`
+    `sudo nano database_setup.py`
+    `sudo nano populate_database.py`
+
+  8. Edit __init__.py, run the following command :
+
+      `sudo nano __init__.py`
     then change `client_secrets.json` path to `/var/www/catalog/catalog/client_secrets.json`
   
   9. cd to `~/` then installing the virtual machine, run the following commands :
     
-    `* sudo pip install virtualenv
-     * sudo virtualenv venv
-     * source venv/bin/activate
-     * sudo chmod -R 777 venv`
+     * `sudo apt-get install python-pip`
+     * `sudo pip install virtualenv`
+     * `sudo virtualenv venv`
+     * `source venv/bin/activate`
+     * `sudo chmod -R 777 venv`
 
   10. Install Flask and other packages, run the following commands :
 
-    `* pip install psycopg2-binary
-     * pip install psycopg2t
-     * pip install Flask-SQLAlchemy
-     * pip install requests
-     * pip install oauth2client`
+     * `sudo pip install psycopg2-binary`
+     * `sudo pip install psycopg2t`
+     * `sudo pip install Flask-SQLAlchemy`
+     * `sudo pip install requests`
+     * `sudo pip install oauth2client`
 
-  11. Setup server configuration, run the following command :
-    * `sudo nano /etc/apache2/sites-available/catalog.conf`
+  11. Setup server configuration, create catalog.conf "Flask App", run the following command :
+    `sudo nano /etc/apache2/sites-available/catalog.conf`
     then write the following lines:
 
 `<VirtualHost *:80>
@@ -292,5 +314,24 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
 </VirtualHost>`
 
   12. Enable the virtual host, run the following command :
+
    * `sudo a2ensite catalog`
    
+   
+## Update Google Configuration
+
+  1. Go to google console and add authorized domains xip.io
+
+  2. Add authorized Javascript origins: http://35.180.75.141.xip.io
+
+  3. Add authorised redirect URIs: http://35.180.75.141.xip.io/gconnect and http://35.180.75.141.xip.io/login
+
+  4. Downlaod the updated JSON file, copy its content and paste it in your server, run the following command :
+    * `sudo nano client_secrets.json`
+
+  5. restart ssh server, run the following command :
+    * `sudo service apache2 restart`
+
+## Congrats! 
+   
+   Now you can access your web app open up http://35.180.75.141.xip.io  in the browser and use it
