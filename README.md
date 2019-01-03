@@ -204,20 +204,20 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
 
    10. Create a new database user named catalog, run the following commands :
 
-      * `sudo su - postgres`
+       * sudo su - postgres
 
-      * `psql`
+       * psql
 
       then inside psql shell, run the following commands :
 
-      * `CREATE USER catalog WITH PASSWORD 'choose a password in my case it is catalog';`
+       * CREATE USER catalog WITH PASSWORD 'choose a password in my case it is catalog';
 
-      * `ALTER USER catalog CREATEDB;`
-
-      * `CREATE DATABASE catalog WITH OWNER catalog;`
+       * ALTER USER catalog CREATEDB;
+ 
+       * CREATE DATABASE catalog WITH OWNER catalog;
 
       then exit psql shell
-      `\q`
+       * \q
       and then logout from postgres 
 
    11. Install git, run the following command :
@@ -262,17 +262,17 @@ application.secret_key = super_secret_key`
   
   3. Reastart Apache, run the following command :
 
-    * `sudo service apache2 restart`
+     * sudo service apache2 restart
 
   4. cd to `/var/www/catalog/catalog`
 
   5. Rename the application.py file, run the following command :
 
-    `sudo mv project.py __init__.py`
+     * sudo mv project.py __init__.py
 
   6. Edit __init__.py, run the following command :
 
-    * `sudo nano __init__.py`
+     * sudo nano __init__.py
 
     then change `app.run(host='0.0.0.0', port=5000)` to `app.run(host='35.180.75.141', port=80)`
 
@@ -281,11 +281,11 @@ application.secret_key = super_secret_key`
     from `engine = create_engine('sqlite:///weddingvenuesappwithusers.db')` to
     `engine = create_engine('postgresql://catalog:catalog@localhost/catalog')` with username catalog and password catalog, run the following commands then edit each file's database :
 
-    * `sudo nano __init__.py`
+     * sudo nano __init__.py
 
-    * `sudo nano database_setup.py`
+     * sudo nano database_setup.py
 
-    * `sudo nano populate_database.py`
+     * sudo nano populate_database.py
 
   8. Edit __init__.py, run the following command :
 
@@ -357,7 +357,7 @@ application.secret_key = super_secret_key`
 
   4. Downlaod the updated JSON file, copy its content and paste it in your server, run the following command :
 
-    * `sudo nano client_secrets.json`
+     * sudo nano client_secrets.json
 
   5. restart ssh server, run the following commands :
 
