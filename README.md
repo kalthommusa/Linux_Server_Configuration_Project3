@@ -95,7 +95,7 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
 
    To check if the new user has been created successfully or not, run the following command :
 
-      * `ls /home/grader` 
+      ls /home/grader
       If the command exits without any problems, then that means the path is valid.
 
    2. To give grader sudo permission, run the following command :
@@ -166,6 +166,10 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
 
    2. Install Apache, run the following command :
 
+      * `sudo apt-get install libapache2-mod-wsgi python-dev`
+
+      * `sudo a2enmod wsgi`   
+ 
       * `sudo apt-get install apache2`
 
    3. TO configure Apache,install mod_wsgi, run the following command :
@@ -239,33 +243,49 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
 
      then add the follwoing inside it: 
      
-     `import sys
-     import logging
-     logging.basicConfig(stream=sys.stderr)
-     sys.path.insert(0, "/var/www/catalog/") `
-     `                                       `
-     `from catalog import app as application
-     application.secret_key = 'Put_Your_google_secret_key'`
+`
+#!/usr/bin/python
+import sys
+import logging
+logging.basicConfig(stream=sys.stderr)
+sys.path.insert(0,"/var/www/catalog/")`
+`
+import random
+import string`
+`
+from catalog import app as application`
+`
+# Secret key to secure session and cookies
+super_secret_key = "".join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
+application.secret_key = super_secret_key`
+
   
   3. Reastart Apache, run the following command :
+
     * `sudo service apache2 restart`
 
   4. cd to `/var/www/catalog/catalog`
 
   5. Rename the application.py file, run the following command :
+
     `sudo mv project.py __init__.py`
 
   6. Edit __init__.py, run the following command :
+
     * `sudo nano __init__.py`
-    then change `app.run(host='0.0.0.0', port=5000)` to `app.run()`
+
+    then change `app.run(host='0.0.0.0', port=5000)` to `app.run(host='35.180.75.141', port=80)`
 
   7. Change the database in  __init__.py, database_setup.py and populate_database.py files :
+
     from `engine = create_engine('sqlite:///weddingvenuesappwithusers.db')` to
     `engine = create_engine('postgresql://catalog:catalog@localhost/catalog')` with username catalog and password catalog, run the following commands then edit each file's database :
 
-    `sudo nano __init__.py`
-    `sudo nano database_setup.py`
-    `sudo nano populate_database.py`
+    * `sudo nano __init__.py`
+
+    * `sudo nano database_setup.py`
+
+    * `sudo nano populate_database.py`
 
   8. Edit __init__.py, run the following command :
 
@@ -282,41 +302,50 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
 
   10. Install Flask and other packages, run the following commands :
 
-     * `sudo pip install psycopg2-binary`
-     * `sudo pip install psycopg2t`
-     * `sudo pip install Flask-SQLAlchemy`
-     * `sudo pip install requests`
-     * `sudo pip install oauth2client`
+      * `sudo pip install psycopg2`
+      * `sudo pip install psycopg2t`
+      * `sudo pip install Flask-SQLAlchemy`
+      * `sudo pip install requests`
+      * `sudo pip install oauth2client`
 
   11. Setup server configuration, create catalog.conf "Flask App", run the following command :
-    `sudo nano /etc/apache2/sites-available/catalog.conf`
+
+      * `sudo nano /etc/apache2/sites-available/catalog.conf`
     then write the following lines:
 
 `<VirtualHost *:80>
-    ServerName [YOUR PUBLIC IP ADDRESS IN MY CASE 35.180.75.141]
-    ServerAlias [YOUR AMAZON LIGHTSAIL HOST NAME IN MY CASE Udacity_Linux_Server_Configuration]
-    ServerAdmin admin@[YOUR PUBLIC IP ADDRESS IN MY CASE 35.180.75.141]
-    WSGIDaemonProcess catalog python-path=/var/www/catalog:/var/www/catalog/venv/lib/python2.7/site-packages
-    WSGIProcessGroup catalog
-    WSGIScriptAlias / /var/www/catalog/catalog.wsgi
-    <Directory /var/www/catalog/catalog/>
-        Order allow,deny
-        Allow from all
-    </Directory>
-    Alias /static /var/www/catalog/catalog/static
-    <Directory /var/www/catalog/catalog/static/>
-        Order allow,deny
-        Allow from all
-    </Directory>
-    ErrorLog ${APACHE_LOG_DIR}/error.log
-    LogLevel warn
-    CustomLog ${APACHE_LOG_DIR}/access.log combined
+        ServerName 35.180.75.141
+        ServerAdmin kalthommusa12345@gmail.com
+        WSGIScriptAlias / /var/www/catalog/catalog.wsgi
+        # Define WSGI parameters. The daemon process runs as the www-data user.
+        WSGIDaemonProcess catalog user=www-data group=www-data threads=5
+        WSGIProcessGroup catalog
+        WSGIApplicationGroup %{GLOBAL}
+        # Allow Apache to serve the WSGI app from the catalog app directory
+        <Directory /var/www/catalog/>
+                Require all granted
+        </Directory>
+        # Setup the static directory (contains CSS, Javascript, etc.)
+        Alias /static /var/www/catalog/catalog/static
+        # Allow Apache to serve the files from the static directory
+        <Directory  /var/www/catalog/catalog/static/>
+                Require all granted
+        </Directory>
+        # Setup the UPLOAD_FOLDER directory 
+        Alias /UPLOAD_FOLDER /var/www/catalog/catalog/UPLOAD_FOLDER
+        # Allow Apache to serve the files from the UPLOAD_FOLDER directory
+        <Directory  /var/www/catalog/catalog/UPLOAD_FOLDER/>
+                Require all granted
+        </Directory>
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        LogLevel warn
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>`
 
   12. Enable the virtual host, run the following command :
 
-   * `sudo a2ensite catalog`
-   
+      * `sudo a2ensite catalog`
+
    
 ## Update Google Configuration
 
@@ -327,11 +356,19 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
   3. Add authorised redirect URIs: http://35.180.75.141.xip.io/gconnect and http://35.180.75.141.xip.io/login
 
   4. Downlaod the updated JSON file, copy its content and paste it in your server, run the following command :
+
     * `sudo nano client_secrets.json`
 
-  5. restart ssh server, run the following command :
-    * `sudo service apache2 restart`
+  5. restart ssh server, run the following commands :
+
+     * `sudo a2dissite 000-default.conf`
+
+     * `sudo a2ensite catalog.conf`
+
+     * `sudo service apache2 reload`
+
+     * `sudo service apache2 restart`
 
 ## Congrats! 
    
-   Now you can access your web app open up http://35.180.75.141.xip.io  in the browser and use it
+   Now you can access your web app open up http://35.180.75.141.xip.io in the browser and use it
