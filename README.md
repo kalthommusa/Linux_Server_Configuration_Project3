@@ -52,8 +52,64 @@ My public IP address of the instance is : 35.180.75.141
      * `sudo apt-get update`
      * `sudo apt-get upgrade`
 
-  2. Change the SSH port from 22 to 2200. Make sure to configure the Lightsail firewall to allow it.
+  2. To automatically install security updates, run the following command :
+
+     * `sudo apt-get install unattended-upgrades`
+
+     which will create /etc/apt/apt.conf.d/20auto-upgrades , run the following command :
+     * `sudo nano /etc/apt/apt.conf.d/20auto-upgrades`
+     you should see the following contents :
+
+     `APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";`
+
+     then `sudo nano`  to `/etc/apt/apt.conf.d/50unattended-upgrades` : 
+     on the first block configuration 'Allowed-Origin', comment all lines and leave only the security line, it should looks like this :
+
+`// Automatically upgrade packages from these (origin, archive) pairs
+Unattended-Upgrade::Allowed-Origins {    
+    // ${distro_id} and ${distro_codename} will be automatically expanded
+    "${distro_id} stable";
+    "${distro_id} ${distro_codename}-security";
+    "${distro_id} ${distro_codename}-updates";
+//  "${distro_id} ${distro_codename}-proposed-updates";
+};`
+`
+// List of packages to not update
+Unattended-Upgrade::Package-Blacklist {
+//  "vim";
+//  "libc6";
+//  "libc6-dev";
+//  "libc6-i686";
+};`
+`
+// Send email to this address for problems or packages upgrades
+// If empty or unset then no email is sent, make sure that you 
+// have a working mail setup on your system. The package 'mailx'
+// must be installed or anything that provides /usr/bin/mail.
+//Unattended-Upgrade::Mail "root@localhost";`
+`
+// Do automatic removal of new unused dependencies after the upgrade
+// (equivalent to apt-get autoremove)
+//Unattended-Upgrade::Remove-Unused-Dependencies "false";`
+`
+// Automatically reboot *WITHOUT CONFIRMATION* if a 
+// the file /var/run/reboot-required is found after the upgrade 
+//Unattended-Upgrade::Automatic-Reboot "false";
+     `
+
+
+     then run the following command:
+
+     * `apt-config dump APT::Periodic::Unattended-Upgrade`
+
+     Which will produce output like:
+
+     * `APT::Periodic::Unattended-Upgrade "1";`
+
+  3. Change the SSH port from 22 to 2200. Make sure to configure the Lightsail firewall to allow it.
      * Open SSH config , run the following command :
+
      `sudo nano /etc/ssh/sshd_config`
 
      * Change the "Port 22" in the file to "Port 2200"
@@ -62,15 +118,17 @@ My public IP address of the instance is : 35.180.75.141
      `sudo service ssh restart`
 
 
-  3. Configure the Uncomplicated Firewall (UFW) to only allow incoming connections for SSH (port 2200), HTTP (port 80), and NTP (port 123), run the following commands :
+  4. Configure the Uncomplicated Firewall (UFW) to only allow incoming connections for SSH (port 2200), HTTP (port 80), and NTP (port 123), run the following commands :
+
      * `sudo ufw allow 2200`
      * `sudo ufw allow 80`
      * `sudo ufw allow 123`
 
      Then enable ufw, run the following command :
+
      * `sudo ufw enable`
 
-  4. In Amazon Lightsail, go to "Networking" section then "Firewall" :  
+  5. In Amazon Lightsail, go to "Networking" section then "Firewall" :  
      * Disable SSH - TCP - port range 20
      * Add Custom - TCP - port range 2200
      * Add Cusotm - UDP - port range 123
@@ -91,7 +149,8 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
    1. To create a user called grader, run the following command :
 
       * `sudo adduser grader`
-      set a password , then you can fill the rest of the informations or just leave it empty by press entr it is optional.
+
+      set a password then you can fill the rest of the information or just leave it empty by press enter it is optional.
 
    To check if the new user has been created successfully or not, run the following command :
 
@@ -114,9 +173,11 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
       * `cd to ~/.ssh`
 
       * Change the permission, run the following commands :
+
         `chmod 644 ~/.ssh/grader_key`
 
       * Copy the public key from your local machine, in my case : 
+
         `cat /c/Users/Toshiba/.ssh/grader_key.pub`
 
       * Back to your server terminal 'or connenct to your server run: `ssh -i ~/.ssh/Lightsail_Key.rsa -p 2200 ubuntu@35.180.75.141` ', and run the following commands :
@@ -146,6 +207,12 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
 
         `sudo nano /etc/ssh/sshd_config`
         then change PasswordAuthentication to **no** 
+
+      * To disable log in as root remotely, run the following command :
+
+        `sudo nano /etc/ssh/sshd_config`
+
+         then change `PermitRootLogin prohibit-password` to `PermitRootLogin no`
 
       * Restart server configuration, run the following command :
 
@@ -204,20 +271,20 @@ Now that SSH port has been changed to 2200, Try exiting the SSH connection and r
 
    10. Create a new database user named catalog, run the following commands :
 
-       * sudo su - postgres
+      * `sudo su - postgres`
 
-       * psql
+      * `psql`
 
       then inside psql shell, run the following commands :
 
-       * CREATE USER catalog WITH PASSWORD 'choose a password in my case it is catalog';
+      * `CREATE USER catalog WITH PASSWORD 'choose a password in my case it is catalog';`
 
-       * ALTER USER catalog CREATEDB;
- 
-       * CREATE DATABASE catalog WITH OWNER catalog;
+      * `ALTER USER catalog CREATEDB;`
+
+      * `CREATE DATABASE catalog WITH OWNER catalog;`
 
       then exit psql shell
-       * \q
+      `\q`
       and then logout from postgres 
 
    11. Install git, run the following command :
@@ -262,17 +329,17 @@ application.secret_key = super_secret_key`
   
   3. Reastart Apache, run the following command :
 
-     * sudo service apache2 restart
+    * `sudo service apache2 restart`
 
   4. cd to `/var/www/catalog/catalog`
 
   5. Rename the application.py file, run the following command :
 
-     * sudo mv project.py __init__.py
+    `sudo mv project.py __init__.py`
 
   6. Edit __init__.py, run the following command :
 
-     * sudo nano __init__.py
+    * `sudo nano __init__.py`
 
     then change `app.run(host='0.0.0.0', port=5000)` to `app.run(host='35.180.75.141', port=80)`
 
@@ -281,11 +348,11 @@ application.secret_key = super_secret_key`
     from `engine = create_engine('sqlite:///weddingvenuesappwithusers.db')` to
     `engine = create_engine('postgresql://catalog:catalog@localhost/catalog')` with username catalog and password catalog, run the following commands then edit each file's database :
 
-     * sudo nano __init__.py
+      `sudo nano __init__.py`
 
-     * sudo nano database_setup.py
+      `sudo nano database_setup.py`
 
-     * sudo nano populate_database.py
+      `sudo nano populate_database.py`
 
   8. Edit __init__.py, run the following command :
 
@@ -357,7 +424,7 @@ application.secret_key = super_secret_key`
 
   4. Downlaod the updated JSON file, copy its content and paste it in your server, run the following command :
 
-     * sudo nano client_secrets.json
+     * `sudo nano client_secrets.json`
 
   5. restart ssh server, run the following commands :
 
